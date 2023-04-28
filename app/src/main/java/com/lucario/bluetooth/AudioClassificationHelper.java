@@ -10,7 +10,6 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.os.SystemClock;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -35,20 +34,16 @@ public class AudioClassificationHelper {
     Context context;
     String currentModel;
     float classificationThreshold, overlap;
-    private final sendResult listener;
     int numOfResults, currentDelegate, numThreads;
 
-    private AudioManager audioManager;
     public AudioClassificationHelper(Context context, String currentModel, float classificationThreshold, float overlap, int numOfResults, int currentDelegate, int numThreads, sendResult listener) {
         this.context = context;
         this.currentModel = currentModel;
         this.classificationThreshold = classificationThreshold;
         this.overlap = overlap;
-        this.listener = listener;
         this.numOfResults = numOfResults;
         this.currentDelegate = currentDelegate;
         this.numThreads = numThreads;
-        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         createChannel();
 //        sendNearbyNotification("Test");
         initClassifier();
@@ -112,13 +107,12 @@ public class AudioClassificationHelper {
         tensorAudio.load(recorder);
         long inferenceTime = SystemClock.uptimeMillis();
         List<Classifications> output = classifier.classify(tensorAudio);
-        inferenceTime = SystemClock.uptimeMillis() - inferenceTime;
         printList(output);
     }
 
     private boolean printList(List<Classifications> output){
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC); // get the current music volume level
+        // get the current music volume level
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC); // get the maximum music volume level
         float volumeLevel = 0.5f; // set the desired volume level here (range: 0.0f to 1.0f)
         int newVolume = (int) (maxVolume * volumeLevel);
